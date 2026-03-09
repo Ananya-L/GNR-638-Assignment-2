@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
+import matplotlib.pyplot as plt
 from models.model_loader import freeze_backbone, load_model
 from utils.dataset import get_dataloaders
 from training.train import train_one_epoch
@@ -19,14 +19,15 @@ freeze_backbone(model)
 
 model = model.to(device)
 
-model = model.to(device)
-
 criterion = nn.CrossEntropyLoss()
 
 optimizer = optim.Adam(model.parameters(), lr=1e-4)
 
 
 epochs = 5
+
+train_accs = []
+val_accs = []
 
 for epoch in range(epochs):
 
@@ -40,8 +41,24 @@ for epoch in range(epochs):
 
     val_acc = evaluate(model, val_loader, device)
 
+    train_accs.append(train_acc)
+    val_accs.append(val_acc)
+
     print(
         f"Epoch {epoch}: "
         f"Train Acc {train_acc:.3f}, "
         f"Val Acc {val_acc:.3f}"
     )
+
+
+
+plt.plot(train_accs, label="Train Accuracy")
+plt.plot(val_accs, label="Validation Accuracy")
+
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.title("Linear Probe Transfer Learning")
+
+plt.legend()
+plt.show()
+plt.savefig("linear_probe_resnet50_accuracy.png")
