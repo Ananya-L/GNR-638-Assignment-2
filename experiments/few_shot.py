@@ -1,3 +1,7 @@
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -12,10 +16,7 @@ from training.train import train_one_epoch
 from training.evaluate import evaluate
 
 
-import sys
-import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 save_dir = "/content/drive/MyDrive/GNR638_results"
 os.makedirs(save_dir, exist_ok=True)
