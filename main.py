@@ -60,5 +60,5 @@ plt.ylabel("Accuracy")
 plt.title("Linear Probe Transfer Learning")
 
 plt.legend()
-plt.show()
 plt.savefig("linear_probe_resnet50_accuracy.png")
+plt.show()
