@@ -9,6 +9,11 @@ from utils.dataset import get_dataloaders
 from utils.feature_extractor import extract_features
 from training.train_linear_probe import train_probe
 
+import os
+
+save_dir = "/content/drive/MyDrive/GNR638_results"
+os.makedirs(save_dir, exist_ok=True)
+
 def get_balanced_subset(features, labels, samples_per_class=30):
 
     selected_feats = []
@@ -69,6 +74,7 @@ for model_name,layers in models.items():
 
     model = load_model(model_name,num_classes)
     model = model.to(device)
+    total_params = sum(p.numel() for p in model.parameters())
     
     for depth,layer in enumerate(layers):
 
@@ -102,7 +108,7 @@ for model_name,layers in models.items():
         subset_feats = subset_feats.cpu()
         pca = PCA(n_components=2)
 
-        reduced = pca.fit_transform(subset_feats.cpu().numpy())
+        reduced = pca.fit_transform(subset_feats.numpy())
 
         # store PCA for combined plot
         pca_storage[(model_name, depth)] = (reduced, subset_labels)
@@ -112,7 +118,7 @@ for model_name,layers in models.items():
         plt.scatter(
             reduced[:,0],
             reduced[:,1],
-            c=subset_labels.numpy(),
+            c=subset_labels.cpu().numpy(),
             cmap="tab20",
             s=10
         )
@@ -124,6 +130,7 @@ for model_name,layers in models.items():
         plt.grid(True)
 
         plt.savefig(f"pca_{model_name}_{layer}.png", dpi=300)
+        plt.savefig(os.path.join(save_dir, f"pca_{model_name}_{layer}.png"), dpi=300)
 
         plt.close()
 
@@ -132,7 +139,7 @@ for model_name,layers in models.items():
         preds = clf(val_feats.to(device)).argmax(1).cpu()
 
         acc = (preds==val_labels).float().mean().item()
-        total_params = sum(p.numel() for p in model.parameters())
+        
         feature_std = train_feats.std().item()
         results.append({
             "model":model_name,
@@ -159,7 +166,7 @@ for model_name in models.keys():
         axes[d].scatter(
             reduced[:,0],
             reduced[:,1],
-            c=labels.numpy(),
+            c=labels.cpu().numpy(),
             cmap="tab20",
             s=8
         )
@@ -173,6 +180,7 @@ for model_name in models.keys():
     plt.tight_layout()
 
     plt.savefig(f"pca_depth_{model_name}.png",dpi=300)
+    plt.savefig(os.path.join(save_dir, f"pca_depth_{model_name}.png"), dpi=300)
 
     plt.close()
 df = pd.DataFrame(results)
@@ -183,7 +191,7 @@ df["depth_name"] = pd.Categorical(
     categories=["Early","Middle","Final"],
     ordered=True
 )
-df.to_csv("layer_probe_results.csv",index=False)
+df.to_csv(os.path.join(save_dir, "layer_probe_results.csv"),index=False)
 
 
 
@@ -207,6 +215,7 @@ plt.title("Layer-wise Representation Quality")
 plt.grid(True)
 
 plt.savefig("layer_probe_accuracy.png", dpi=300)
+plt.savefig(os.path.join(save_dir, "layer_probe_accuracy.png"), dpi=300)
 
 plt.show()
 
@@ -223,7 +232,7 @@ norm_table = df.pivot_table(
 print("\nFeature Norm Statistics")
 print(norm_table)
 
-norm_table.to_csv("feature_norm_statistics.csv")
+norm_table.to_csv(os.path.join(save_dir, "feature_norm_statistics.csv"))
 
 compactness_table = df.pivot_table(
     index="model",
@@ -234,4 +243,4 @@ compactness_table = df.pivot_table(
 print("\nCluster Compactness")
 print(compactness_table)
 
-compactness_table.to_csv("cluster_compactness.csv")
+compactness_table.to_csv(os.path.join(save_dir, "cluster_compactness.csv"))
