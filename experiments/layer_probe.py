@@ -1,3 +1,7 @@
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import torch
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -9,7 +13,7 @@ from utils.dataset import get_dataloaders
 from utils.feature_extractor import extract_features
 from training.train_linear_probe import train_probe
 
-import os
+
 
 save_dir = "/content/drive/MyDrive/GNR638_results"
 os.makedirs(save_dir, exist_ok=True)
