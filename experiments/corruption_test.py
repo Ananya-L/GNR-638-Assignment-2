@@ -14,8 +14,7 @@ from torchvision.transforms import functional as F
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from models import resnet50, densenet121, efficientnet_b0
-
+from models.model_loader import load_model
 
 # -----------------------
 # Save to Google Drive
@@ -104,34 +103,37 @@ def evaluate(model,loader,device):
 # -----------------------
 
 def run_corruption_test():
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
-
     dataset_path = "dataset/val"
-
-    base_transform = transforms.Compose([
-        transforms.Resize((224,224)),
-        transforms.ToTensor()
-    ])
-
-    clean_dataset = datasets.ImageFolder(dataset_path,transform=base_transform)
-    clean_loader = DataLoader(clean_dataset,batch_size=32,shuffle=False)
-
-    models = {
-        "resnet50": resnet50(),
-        "densenet121": densenet121(),
-        "efficientnet_b0": efficientnet_b0()
-    }
-
+    num_classes = 30 # Ensure this matches your specific dataset
+    weights = {
+    "resnet50": "resnet50.pth",
+    "densenet121": "densenet121.pth",
+    "efficientnet_b0": "efficientnet_b0.pth"
+}
+    # Correct way to load the models using your model_loader
+    model_names = ["resnet50", "densenet121", "efficientnet_b0"]
+    
     results = []
     time_log = {}
+    base_transform = transforms.Compose([
+    transforms.Resize((224,224)),
+    transforms.ToTensor()
+])
 
-    for name,model in models.items():
+    clean_dataset = datasets.ImageFolder(dataset_path, transform=base_transform)
+
+    clean_loader = DataLoader(clean_dataset, batch_size=32, shuffle=False)
+
+    for name in model_names:
 
         start_time = time.time()
 
-        print("\nRunning:",name)
+        print("\nRunning:", name)
 
+        model = load_model(name, num_classes=num_classes)
+        state_dict = torch.load(weights[name], map_location=device)
+        model.load_state_dict(state_dict)
         model = model.to(device)
 
         clean_acc = evaluate(model,clean_loader,device)
@@ -248,25 +250,25 @@ def run_corruption_test():
     # Separate plots per model
     # -----------------------
 
-    for model in df["model"].unique():
+    for model_name in df["model"].unique():
 
-        model_df = df[df["model"]==model]
+      model_df = df[df["model"] == model_name]
 
-        plt.figure()
+      plt.figure()
 
-        sns.lineplot(
-            data=model_df,
-            x="level",
-            y="accuracy",
-            hue="corruption",
-            marker="o"
-        )
+      sns.lineplot(
+          data=model_df,
+          x="level",
+          y="accuracy",
+          hue="corruption",
+          marker="o"
+      )
 
-        plt.title(f"Robustness Analysis - {model}")
+      plt.title(f"Robustness Analysis - {model_name}")
 
-        plt.savefig(f"{SAVE_DIR}/{model}_robustness.png")
+      plt.savefig(f"{SAVE_DIR}/{model_name}_robustness.png")
 
-        plt.close()
+      plt.close()
 
     for corruption in df["corruption"].unique():
 
@@ -293,7 +295,7 @@ def run_corruption_test():
         f.write("Corruption Robustness Experiment\n\n")
 
         f.write("Models evaluated:\n")
-        for m in models.keys():
+        for m in model_names:
             f.write(m+"\n")
 
         f.write("\nCorruption Levels:\n")
