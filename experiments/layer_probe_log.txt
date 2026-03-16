@@ -1,0 +1,22 @@
+model.safetensors: 100% 102M/102M [00:04<00:00, 25.2MB/s]
+model.safetensors: 100% 32.3M/32.3M [00:01<00:00, 26.9MB/s]
+model.safetensors: 100% 21.4M/21.4M [00:02<00:00, 9.70MB/s]
+Figure(700x400)
+/content/GNR-638-Assignment-2/experiments/layer_probe.py:229: FutureWarning: The default value of observed=False is deprecated and will change to observed=True in a future version of pandas. Specify observed=False to silence this warning and retain the current behavior
+  norm_table = df.pivot_table(
+
+Feature Norm Statistics
+depth_name           Early     Middle      Final
+model                                           
+densenet121      54.285896  28.273373  28.183529
+efficientnet_b0  14.954614  21.719501  27.807667
+resnet50         17.802614  43.528526   6.413062
+/content/GNR-638-Assignment-2/experiments/layer_probe.py:240: FutureWarning: The default value of observed=False is deprecated and will change to observed=True in a future version of pandas. Specify observed=False to silence this warning and retain the current behavior
+  compactness_table = df.pivot_table(
+
+Cluster Compactness
+depth_name          Early    Middle     Final
+model                                        
+densenet121      0.160668  0.058042  0.051330
+efficientnet_b0  0.506069  1.256053  1.098245
+resnet50         0.003406  0.116132  0.008608
